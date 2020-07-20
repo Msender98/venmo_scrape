@@ -30,11 +30,16 @@ my_user = scrape.user.get_my_profile()
 
 user_df = pd.DataFrame(scrape.user_scrape(user = my_user), index = [0])
 
+transactions, users_initial = scrape.user_transaction_scrape(my_user)
+
+
 
 #One dataframe to store transactions
 transaction_df = pd.DataFrame()
 
 print(user_df)
+
+
 
 scrape.log_out(f'Bearer {access_token}')
 
