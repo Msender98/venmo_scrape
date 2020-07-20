@@ -15,31 +15,30 @@ access_token = Venmo_Scrape_Client.get_access_token(username = config.username,
 scrape = Venmo_Scrape_Client(access_token = access_token)
 
 
-
+#initial user
 my_user = scrape.user.get_my_profile()
-
-#example methods from Venmo_Scrape_Client
-# print(scrape.user_scrape(user = my_user))
-# transactions = scrape.user.get_user_transactions(user = my_user)
-# #print(transactions)
-# print(scrape.transaction_scrape(transactions[0]))
-
-
-#One dataframe to store users information
-
-
-user_df = pd.DataFrame(scrape.user_scrape(user = my_user), index = [0])
-
 transactions, users_initial = scrape.user_transaction_scrape(my_user)
 
+#user dataframe initialization
+user_df = pd.DataFrame(scrape.user_scrape(user = my_user), index = [0])
+transaction_df = pd.DataFrame(scrape.transaction_scrape(transactions[0]), index = [0])
 
+#Sets tracking what has been added to the dataframes:
+user_set = {my_user.id}
+transaction_set = {transactions[0].id}
 
-#One dataframe to store transactions
-transaction_df = pd.DataFrame()
+for user in users_initial:
+    if user.id not in user_set:
+        user_df = user_df.append(scrape.user_scrape(user = user), ignore_index = True)
+        user_set = user_set.union({user.id})
 
-print(user_df)
+for transaction in transactions:
+    if transaction.id not in transaction_set:
+        transaction_df = transaction_df.append(scrape.transaction_scrape(transaction = transaction), ignore_index = True)
+        transaction_set = transaction_set.union(transaction.id)
 
-
+user_df.to_csv('venmo_users.csv')
+transaction_df.to_csv('venmo_transactions.csv')
 
 scrape.log_out(f'Bearer {access_token}')
 

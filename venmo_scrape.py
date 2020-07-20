@@ -64,11 +64,12 @@ class Venmo_Scrape_Client(Client):
 
         try:
             transactions = self.user.get_user_transactions(user_id = user.id)
-            users = {transaction.target.id for transaction in transactions}.union(
-                                {transaction.actor.id for transaction in transactions})
+            users = {transaction.target for transaction in transactions}.union(
+                                {transaction.actor for transaction in transactions})
             
         except:
-            transactions = []
+            transactions = {}
             users = {user.id}
 
         return transactions, users 
+
