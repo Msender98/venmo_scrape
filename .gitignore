@@ -1,6 +1,5 @@
 config.py
 .ipynb_checkpoints
-test_notebooks
 *.csv
 *.ipynb
 *.p
