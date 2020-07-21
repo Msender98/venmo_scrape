@@ -54,6 +54,7 @@ class Venmo_Scrape_Client(Client):
         '''
         Inputs are a user or user_id, and any existing venmo_transaction or venmo user dataframes. If 
         '''
+        new_users = set()
 
         if not (user or user_id):
             raise ValueError('user must be a venmo.user.User object')
@@ -67,18 +68,18 @@ class Venmo_Scrape_Client(Client):
         except:
             transactions = {}
             user_error = user.id
-            print(f'{user.id} had an error while pulling transactions')
+            print(f'{user.username} had an error while pulling transactions')
             return user_df, transaction_df, new_users, user_error
 
-        if not user_df:
+        if (user_df is None):
             user_df = pd.DataFrame(self.user_scrape(user = user), index = [0])
 
-        if not transaction_df:
+        if (transaction_df is None):
             transaction_df = pd.DataFrame(self.transaction_scrape(transaction = transactions[0]), index = [0])
 
         past_users = set(user_df['user_id'])
         past_transactions = set(transaction_df['transaction_id'])
-        new_users = set()
+        
 
         for con_user_id in connected_user_ids:
             if con_user_id not in past_users:
@@ -95,5 +96,5 @@ class Venmo_Scrape_Client(Client):
 
         
 
-        return user_df, transaction_df, new_users, None
+        return user_df, transaction_df, new_users, set()
 

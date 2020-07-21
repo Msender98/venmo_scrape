@@ -3,3 +3,4 @@ config.py
 *.csv
 *.ipynb
 *.p
+*.pyc
