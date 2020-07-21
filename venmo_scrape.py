@@ -1,5 +1,5 @@
 from venmo_api import Client
-
+import pandas as pd
 
 
 class Venmo_Scrape_Client(Client):
@@ -50,10 +50,9 @@ class Venmo_Scrape_Client(Client):
 
         return item
 
-    def user_transaction_scrape(self, user = None, user_id = None):
+    def scrape_data_to_df(self, user = None, user_id = None, user_df = None, transaction_df = None):
         '''
-        Inputs a user object and outputs a set of users they have interacted with and a list 
-        of their transactions.
+        Inputs are a user or user_id, and any existing venmo_transaction or venmo user dataframes. If 
         '''
 
         if not (user or user_id):
@@ -61,15 +60,40 @@ class Venmo_Scrape_Client(Client):
         elif not user:   
             user = self.user.get_user(user_id = user_id)
 
-
         try:
             transactions = self.user.get_user_transactions(user_id = user.id)
-            users = {transaction.target for transaction in transactions}.union(
-                                {transaction.actor for transaction in transactions})
-            
+            connected_user_ids = {transaction.target.id for transaction in transactions}.union(
+                                {transaction.actor.id for transaction in transactions})
         except:
             transactions = {}
-            users = {user.id}
+            user_error = user.id
+            print(f'{user.id} had an error while pulling transactions')
+            return user_df, transaction_df, new_users, user_error
 
-        return transactions, users 
+        if not user_df:
+            user_df = pd.DataFrame(self.user_scrape(user = user), index = [0])
+
+        if not transaction_df:
+            transaction_df = pd.DataFrame(self.transaction_scrape(transaction = transactions[0]), index = [0])
+
+        past_users = set(user_df['user_id'])
+        past_transactions = set(transaction_df['transaction_id'])
+        new_users = set()
+
+        for con_user_id in connected_user_ids:
+            if con_user_id not in past_users:
+                user_df = user_df.append(self.user_scrape(user_id = con_user_id), ignore_index = True)
+                past_users = past_users.union({con_user_id})
+                new_users = new_users.union({con_user_id})
+                
+        for transaction in transactions:
+            if transaction.id not in past_transactions:
+                transaction_df = transaction_df.append(self.transaction_scrape(transaction = transaction), ignore_index = True)
+                transaction_set = past_transactions.union({transaction.id})
+
+
+
+        
+
+        return user_df, transaction_df, new_users, None
 
