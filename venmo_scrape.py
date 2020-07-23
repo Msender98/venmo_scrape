@@ -68,7 +68,7 @@ class Venmo_Scrape_Client(Client):
         except:
             transactions = {}
             user_error = user.id
-            print(f'{user.username} had an error while pulling transactions')
+            #print(f'{user.id} had an error while pulling transactions')
             return user_df, transaction_df, new_users, user_error
 
         if (user_df is None):
