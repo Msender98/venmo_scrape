@@ -1,6 +1,6 @@
 from venmo_api import Client
 import pandas as pd
-
+import datetime
 
 class Venmo_Scrape_Client(Client):
     '''
@@ -50,9 +50,56 @@ class Venmo_Scrape_Client(Client):
 
         return item
 
+    def all_transactions(self, user = None, user_id = None, year = 2019):
+        '''
+        Get all of the transactions of a venmo user after a certain year
+        '''
+        if not (user or user_id):
+            raise ValueError('user must be a venmo.user.User object')
+        elif not user:   
+            user = self.user.get_user(user_id = user_id)
+        
+        transactions = self.user.get_user_transactions(user = user)
+        
+        
+        if len(transactions) == 0:
+            return {}
+        
+        last_year = datetime.datetime.fromtimestamp(transactions[-1].date_created).year #will raise error if transactions are empty
+        
+        while last_year >= year:
+            
+            if len(transactions) == 0:
+                return transactions
+
+            last_year = datetime.datetime.fromtimestamp(transactions[-1].date_created).year
+            new_transactions = self.user.get_user_transactions(user = user, before_id = transactions[-1].id)
+            transactions = transactions + new_transactions
+            
+                
+        return transactions
+
+    def find_users(self, guess = None, user_df = None):
+
+        if (guess is None):
+            guess = input('Initial User Search')
+
+        if (user_df is not None):
+            past_users = user_df['user_id']
+        else:
+            past_users = []
+
+        guesses = self.user.search_for_users(query = guess)
+        
+        new_users = [user.id for user in guesses if user.id not in past_users]
+
+        if len(new_users) == 0:
+            raise ValueError('Change the initial guess!')
+        return new_users
+
     def scrape_data_to_df(self, user = None, user_id = None, user_df = None, transaction_df = None):
         '''
-        Inputs are a user or user_id, and any existing venmo_transaction or venmo user dataframes. If 
+        Inputs are a user or user_id, and any existing venmo_transaction or venmo user dataframes.
         '''
         new_users = set()
 
@@ -62,13 +109,14 @@ class Venmo_Scrape_Client(Client):
             user = self.user.get_user(user_id = user_id)
 
         try:
-            transactions = self.user.get_user_transactions(user_id = user.id)
+            transactions = self.all_transactions(user = user, year = 2020) #pulls all of the transactions before 2020
+
             connected_user_ids = {transaction.target.id for transaction in transactions}.union(
-                                {transaction.actor.id for transaction in transactions})
-        except:
+                                  {transaction.actor.id for transaction in transactions})
+        except (ValueError, TypeError):
             transactions = {}
-            user_error = user.id
-            #print(f'{user.id} had an error while pulling transactions')
+            user_error = set([user.id])
+            print(f'{user.id} had an error while pulling transactions')
             return user_df, transaction_df, new_users, user_error
 
         if (user_df is None):
@@ -84,9 +132,10 @@ class Venmo_Scrape_Client(Client):
         for con_user_id in connected_user_ids:
             if con_user_id not in past_users:
                 user_df = user_df.append(self.user_scrape(user_id = con_user_id), ignore_index = True)
-                past_users = past_users.union({con_user_id})
                 new_users = new_users.union({con_user_id})
+                past_users = past_users.union({con_user_id})
                 
+        print(len(transactions))
         for transaction in transactions:
             if transaction.id not in past_transactions:
                 transaction_df = transaction_df.append(self.transaction_scrape(transaction = transaction), ignore_index = True)
