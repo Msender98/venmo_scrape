@@ -72,14 +72,17 @@ scrape = Venmo_Scrape_Client(access_token = access_token)
 #my_user = scrape.user.search_for_users(query = 'Mike-Sender')
 
 #Load previously created dataframes and set of new_users to scrape
-user_df = pickle.load(open('user_data.p','rb'))
-transaction_df = pickle.load(open('transaction_data.p','rb'))
-
+try:
+    user_df = pickle.load(open('user_data.p','rb'))
+    transaction_df = pickle.load(open('transaction_data.p','rb'))
+except FileNotFoundError:
+    user_df = None
+    transaction_df = None
 #Find a new set of users by searching with venmo's api and a 
 #new_users = scrape.find_users()
 new_users = pickle.load(open('new_users.p','rb'))
 #Scrape a set level of new users from the given set of users 
-user_df, transaction_df, new_users, error_ids = scrape_level(new_users, 3) #user_df = user_df, transaction_df = transaction_df)
+user_df, transaction_df, new_users, error_ids = scrape_level(new_users, 3, user_df = user_df, transaction_df = transaction_df)
 
 
 pickle.dump(new_users, open('new_users.p','wb'))
