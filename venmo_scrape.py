@@ -52,7 +52,7 @@ class Venmo_Scrape_Client(Client):
 
     def all_transactions(self, user = None, user_id = None, year = 2019):
         '''
-        Get all of the transactions of a venmo user after a certain year
+        Get all of the transactions of a venmo user after a given year
         '''
         if not (user or user_id):
             raise ValueError('user must be a venmo.user.User object')
@@ -80,6 +80,9 @@ class Venmo_Scrape_Client(Client):
         return transactions
 
     def find_users(self, guess = None, user_df = None):
+        '''
+        Input a query, generally a name or username, and output a list of similar venmo user_ids
+        '''
 
         if (guess is None):
             guess = input('Initial User Search')
@@ -97,8 +100,10 @@ class Venmo_Scrape_Client(Client):
             raise ValueError('Change the initial guess!')
         return new_users
 
-    def scrape_data_to_df(self, user = None, user_id = None, user_df = None, transaction_df = None):
+    def scrape_data_to_df(self, user = None, user_id = None, user_df = None, transaction_df = None, year = 2019):
         '''
+        Scrape data from a venmo user and output all of their connected users and transactions from after a given year. 
+
         Inputs are a user or user_id, and any existing venmo_transaction or venmo user dataframes.
         '''
         new_users = set()
@@ -109,7 +114,7 @@ class Venmo_Scrape_Client(Client):
             user = self.user.get_user(user_id = user_id)
 
         try:
-            transactions = self.all_transactions(user = user, year = 2020) #pulls all of the transactions before 2020
+            transactions = self.all_transactions(user = user, year = year)
 
             connected_user_ids = {transaction.target.id for transaction in transactions}.union(
                                   {transaction.actor.id for transaction in transactions})

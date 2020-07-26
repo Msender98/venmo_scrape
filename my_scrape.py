@@ -19,7 +19,10 @@ def scrape_level(users, levels, user_df = None, transaction_df = None):
     transaction_df = dataframe of venmo transaction data. Contains both user_ids of users's involved, a unique id and a note
 
     Returns:
-    user_df = updated data 
+    user_df = updated dataframe with venmo user 
+    transaction_df = updated dataframe with venmo transaction data
+    new_users = list of users which have not been added to the dataframe yet (neighbors of the last level of users)
+    error_ids = list of errors of users
     
     '''
     if isinstance(users,str):
