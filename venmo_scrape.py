@@ -128,6 +128,7 @@ class Venmo_Scrape_Client(Client):
             user_df = pd.DataFrame(self.user_scrape(user = user), index = [0])
 
         if (transaction_df is None):
+            #if there are 0 transactions this should raise an error
             transaction_df = pd.DataFrame(self.transaction_scrape(transaction = transactions[0]), index = [0])
 
         past_users = set(user_df['user_id'])

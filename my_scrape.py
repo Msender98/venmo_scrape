@@ -38,7 +38,7 @@ def scrape_level(users, levels, user_df = None, transaction_df = None):
     for level in range(levels):
         print('*'*50)
         print(f'Starting level {level+1}')
-        print(f'{len(new_users)}')
+        #print(f'{len(new_users)}')
         
         
         for user in new_users:
@@ -68,8 +68,6 @@ access_token = Venmo_Scrape_Client.get_access_token(username = config.username,
 scrape = Venmo_Scrape_Client(access_token = access_token)
 
 
-#initial user
-#my_user = scrape.user.search_for_users(query = 'Mike-Sender')
 
 #Load previously created dataframes and set of new_users to scrape
 try:
@@ -78,16 +76,16 @@ try:
 except FileNotFoundError:
     user_df = None
     transaction_df = None
-#Find a new set of users by searching with venmo's api and a 
-#new_users = scrape.find_users()
-new_users = pickle.load(open('new_users.p','rb'))
+#Find a new set of users by searching with venmo's api and a user input
+new_users = scrape.find_users()
+
 #Scrape a set level of new users from the given set of users 
 user_df, transaction_df, new_users, error_ids = scrape_level(new_users, 3, user_df = user_df, transaction_df = transaction_df)
 
-
+#dump new_users and any errors
 pickle.dump(new_users, open('new_users.p','wb'))
 pickle.dump(error_ids, open('error_ids.p','wb'))
-
+#
 user_df.to_pickle('user_data.p')
 transaction_df.to_pickle('transaction_data.p')
 
