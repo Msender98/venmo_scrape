@@ -1,5 +1,5 @@
 # Analyzing Social Networks Using Public Venmo Data
-This repository holds tools written in python to scrape public venmo data. Thy can be use to download, map and analyze venmo user's behavior and networks. 
+This repository holds tools written in python to scrape public venmo data. They can be use to download, map and analyze venmo user's behavior and networks. 
 
 ## Example:
 The analysis ipython notebook above walks through an example analysis. It uses a little natural language processing to categorize transactions and the networkx library: https://networkx.github.io/ to rank similar users. 
